@@ -119,7 +119,52 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.2);
         }
+        .unique-chat-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Maximum width for the input area */
+    background-color: #fff; /* White background for input area */
+    border: 1px solid #ccc; /* Light border color */
+    border-radius: 25px; /* Rounded corners */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Soft shadow */
+    overflow: hidden; /* Ensures child elements fit inside */
+}
 
+#userMessageInput {
+    width: 100%;
+    padding: 12px 15px; /* Padding for comfort */
+    border: none; /* Remove default border */
+    border-radius: 25px 0 0 25px; /* Rounded corners on the left */
+    font-size: 16px;
+    color: #555; /* Dark text color */
+    transition: box-shadow 0.3s; /* Smooth shadow transition */
+}
+
+#userMessageInput::placeholder {
+    color: #bbb; /* Placeholder color */
+}
+
+#userMessageInput:focus {
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); /* Shadow on focus */
+}
+
+#sendUserMessage {
+    background-color: #3498db; /* Button color */
+    color: #fff; /* Button text color */
+    padding: 12px 20px; /* Padding for the button */
+    border: none; /* Remove default border */
+    border-radius: 0 25px 25px 0; /* Rounded corners on the right */
+    font-size: 16px;
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition effects */
+}
+
+#sendUserMessage:hover {
+    background-color: #2980b9; /* Darker shade on hover */
+    transform: scale(1.05); /* Slightly scale up on hover */
+}
         button {
             padding: 12px 25px;
             border: none;
@@ -261,9 +306,9 @@
             <div class="chat-box">
                 <h2>Chat</h2>
                 <div class="chat-messages" id="chatMessages"></div>
-                <div class="chat-input">
-                    <input type="text" id="messageInput" placeholder="Type a message...">
-                    <button id="sendMessage">Send</button>
+                <div class="unique-chat-input" id="chatInputArea">
+                    <input type="text" id="userMessageInput" placeholder="Type your message...">
+                    <button id="sendUserMessage">Send</button>
                 </div>
             </div>
         </div>
