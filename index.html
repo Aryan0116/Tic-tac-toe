@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Tic Tac Toe</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --primary-color: #4158D0;
+            --secondary-color: #C850C0;
+            --accent-color: #FFCC70;
+            --background: #0f0c29;
+            --text-color: #ffffff;
+            --cell-hover: rgba(255, 255, 255, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(45deg, var(--background), #24243e, #302b63);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 40px;
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .game-area {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 500px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .cell:hover {
+            background: var(--cell-hover);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .cell.x {
+            color: #FF6B6B;
+        }
+
+        .cell.o {
+            color: #4ECDC4;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .username-input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+            width: 250px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .username-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .side-panel {
+            width: 350px;
+        }
+
+        .scoreboard {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .player-score {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .player-score.current-player {
+            background: linear-gradient(45deg, rgba(65, 88, 208, 0.3), rgba(200, 80, 192, 0.3));
+            transform: scale(1.05);
+        }
+
+        .chat-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .status {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .winning-line {
+            background: linear-gradient(45deg, rgba(65, 88, 208, 0.5), rgba(200, 80, 192, 0.5 ));
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-area">
+            <h1>Multiplayer Tic Tac Toe</h1>
+            <div class="controls">
+                <input type="text" id="username" placeholder="Enter your username" class="username-input">
+                <button id="createRoom">Create Room</button>
+                <button id="joinRoom">Join Room</button>
+                <button id="requestRematch" style="display: none;">Request Rematch</button>
+            </div>
+            <div class="status" id="status">Welcome! Enter your username to start playing.</div>
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+            <div id="rematchButtons" style="display: none; text-align: center;">
+                <button id="acceptRematch">Accept Rematch</button>
+                <button id="declineRematch">Decline Rematch</button>
+            </div>
+        </div>
+        <div class="side-panel">
+            <div class="scoreboard">
+                <h2>Scoreboard</h2>
+                <div id="scores"></div>
+            </div>
+            <div class="chat-box">
+                <h2>Chat</h2>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type a message...">
+                    <button id="sendMessage">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+let currentRoom = null;
+let isMyTurn = false;
+let mySymbol = null;
+let username = '';
+let players = [];
+
+// DOM Elements
+const board = document.getElementById('board');
+const status = document.getElementById('status');
+const createRoomBtn = document.getElementById('createRoom');
+const joinRoomBtn = document.getElementById('joinRoom');
+const usernameInput = document.getElementById('username');
+const messageInput = document.getElementById('messageInput');
+const sendMessageBtn = document.getElementById('sendMessage');
+const chatMessages = document.getElementById('chatMessages');
+const scores = document.getElementById('scores');
+const requestRematchBtn = document.getElementById('requestRematch');
+const rematchButtons = document.getElementById('rematchButtons');
+const acceptRematchBtn = document.getElementById('acceptRematch');
+const declineRematchBtn = document.getElementById('declineRematch');
+
+// Event Listeners
+createRoomBtn.addEventListener('click', () => {
+    username = usernameInput.value.trim();
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    socket.emit('createRoom', username);
+});
+
+joinRoomBtn.addEventListener('click', () => {
+    username = usernameInput.value.trim();
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    const roomId = prompt('Enter room ID:');
+    if (roomId) {
+        socket.emit('joinRoom', { roomId, username });
+        currentRoom = roomId;
+    }
+});
+
+requestRematchBtn.addEventListener('click', () => {
+    socket.emit('requestRematch', { roomId: currentRoom });
+    status.textContent = 'Rematch requested. Waiting for opponent...';
+    requestRematchBtn.disabled = true;
+});
+
+acceptRematchBtn.addEventListener('click', () => {
+    socket.emit('acceptRematch', { roomId: currentRoom });
+    hideRematchButtons();
+});
+
+declineRematchBtn.addEventListener('click', () => {
+    socket.emit('declineRematch', { roomId: currentRoom });
+    hideRematchButtons();
+});
+
+board.addEventListener('click', (e) => {
+    if (!isMyTurn) return;
+    
+    const cell = e.target;
+    if (cell.classList.contains('cell') && !cell.textContent) {
+        const index = cell.dataset.index;
+        socket.emit('makeMove', { roomId: currentRoom, index });
+    }
+});
+
+sendMessageBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+// Helper Functions
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message && currentRoom) {
+        socket.emit('sendMessage', { roomId: currentRoom, message, username });
+        messageInput.value = '';
+    }
+}
+
+function updateScoreboard() {
+    scores.innerHTML = players.map(player => `
+        <div class="player-score ${player.id === socket.id ? 'current-player' : ''}">
+            <span>${player.username}</span>
+            <span>${player.score}</span>
+        </div>
+    `).join('');
+}
+
+function resetBoard() {
+    Array.from(document.getElementsByClassName('cell')).forEach(cell => {
+        cell.textContent = '';
+        cell.className = 'cell';
+    });
+}
+
+function hideRematchButtons() {
+    rematchButtons.style.display = 'none';
+}
+
+function showRematchButton() {
+    requestRematchBtn.style.display = 'inline-block';
+    requestRematchBtn.disabled = false;
+}
+
+function highlightWinningCells(winningLine) {
+    if (winningLine) {
+        winningLine.forEach(index => {
+            document.querySelector(`[data-index="${index}"]`).classList.add('winning-line');
+        });
+    }
+}
+
+// Socket Events
+socket.on('roomCreated', (roomId) => {
+    currentRoom = roomId;
+    status.textContent = `Room created! Share this ID with your friend: ${roomId}`;
+    status.classList.add('fade-in');
+});
+
+socket.on('gameStart', ({ players: gamePlayers, currentPlayer, messages }) => {
+    players = gamePlayers;
+    mySymbol = socket.id === players[0].id ? 'X' : 'O';
+    isMyTurn = socket.id === currentPlayer;
+    status.textContent = isMyTurn ? 'Your turn!' : "Opponent's turn";
+    updateScoreboard();
+    resetBoard();
+    hideRematchButtons();
+    requestRematchBtn.style.display = 'none';
+
+    // Load existing messages
+    chatMessages.innerHTML = messages.map(msg => `
+        <div class="message">
+            <span class="username">${msg.username}</span>
+            <span class="timestamp">${msg.timestamp}</span>
+            <div>${msg.message}</div>
+        </div>
+    `).join('');
+});
+
+socket.on('moveMade', ({ index, symbol, board: gameBoard, winningLine }) => {
+    const cell = document.querySelector(`[data-index="${index}"]`);
+    cell.textContent = symbol;
+    cell.classList.add(symbol.toLowerCase());
+    
+    if (winningLine) {
+        highlightWinningCells(winningLine);
+    }
+    
+    isMyTurn = symbol !== mySymbol;
+    status.textContent = isMyTurn ? 'Your turn!' : "Opponent's turn";
+});
+
+socket.on('gameOver', ({ winner, players: updatedPlayers, winningLine }) => {
+    players = updatedPlayers;
+    updateScoreboard();
+    
+    if (winningLine) {
+        highlightWinningCells(winningLine);
+    }
+    
+    if (winner === 'draw') {
+        status.textContent = "It's a draw!";
+    } else {
+        status.textContent = winner === mySymbol ? 'You won!' : 'You lost!';
+    }
+    isMyTurn = false;
+    showRematchButton();
+});
+
+socket.on('rematchRequested', () => {
+    rematchButtons.style.display = 'block';
+    status.textContent = 'Opponent requested a rematch';
+});
+
+socket.on('rematchAccepted', () => {
+    status.textContent = 'Rematch accepted! Game starting...';
+    resetBoard();
+    hideRematchButtons();
+    requestRematchBtn.style.display = 'none';
+});
+
+socket.on('rematchDeclined', () => {
+    status.textContent = 'Rematch declined';
+    showRematchButton();
+});
+
+socket.on('newMessage', (message) => {
+    const messageElement = document.createElement('div');
+    messageElement.className = 'message fade-in';
+    messageElement.innerHTML = `
+        <span class="username">${message.username}</span>
+        <span class="timestamp">${message.timestamp}</span>
+        <div>${message.message}</div>
+    `;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+socket.on('playerLeft', () => {
+    status.textContent = 'Opponent left the game';
+    isMyTurn = false;
+    resetBoard();
+    showRematchButton();
+});
+
+socket.on('roomError', (message) => {
+    alert(message);
+});
+</script>
+</body>
+</html>
