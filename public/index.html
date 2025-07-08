@@ -5,202 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiplayer Tic Tac Toe</title>
     <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4158D0;
-            --secondary-color: #C850C0;
-            --accent-color: #FFCC70;
-            --background: #0f0c29;
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #4ecdc4;
+            --danger-color: #ff6b6b;
+            --warning-color: #feca57;
+            --background-start: #0f0c29;
+            --background-mid: #24243e;
+            --background-end: #302b63;
             --text-color: #ffffff;
-            --cell-hover: rgba(255, 255, 255, 0.3);
+            --text-secondary: #b8b8b8;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-heavy: 0 15px 35px rgba(31, 38, 135, 0.5);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background: linear-gradient(45deg, var(--background), #24243e, #302b63);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-start), var(--background-mid), var(--background-end));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             color: var(--text-color);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .game-container {
             display: flex;
-            gap: 40px;
+            gap: 30px;
             max-width: 1400px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            align-items: flex-start;
         }
 
         .game-area {
             flex: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-light);
+            padding: 30px;
+            animation: slideInLeft 0.8s ease-out;
         }
 
-        h1 {
-            font-size: 2.5em;
-            text-align: center;
-            margin-bottom: 30px;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 30px auto;
-            max-width: 500px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-        }
-
-        .cell {
-            aspect-ratio: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4em;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .cell:hover {
-            background: var(--cell-hover);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-        }
-
-        .cell.x {
-            color: #FF6B6B;
-        }
-
-        .cell.o {
-            color: #4ECDC4;
-        }
-
-        .controls {
-            text-align: center;
-            margin: 30px 0;
-        }
-
-        .username-input {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1em;
-            width: 250px;
-            transition: all 0.3s ease;
-            margin-right: 10px;
-        }
-
-        .username-input:focus {
-            outline: none;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        .side-panel {
-            width: 350px;
-        }
-
-        .scoreboard {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .player-score {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .player-score.current-player {
-            background: linear-gradient(45deg, rgba(65, 88, 208, 0.3), rgba(200, 80, 192, 0.3));
-            transform: scale(1.05);
-        }
-
-        .chat-box {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            height: 450px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-
-        .message {
-            margin: 10px 0;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            animation: messageSlide 0.3s ease;
-        }
-
-        @keyframes messageSlide {
+        @keyframes slideInLeft {
             from {
-                transform: translateX(-20px);
+                transform: translateX(-50px);
                 opacity: 0;
             }
             to {
@@ -208,26 +79,523 @@
                 opacity: 1;
             }
         }
-        #GGGG{
-            padding: 20px;
-            border-radius: 20%;
-            height:30px;
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.5));
+            }
+            to {
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.8));
+            }
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .username-input {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 400;
+            min-width: 200px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .username-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+
+        .username-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover:before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .status {
             text-align: center;
-            font-size: 1.3em;
+            font-size: 1.3rem;
             margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
             transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: var(--shadow-light);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 450px;
+            padding: 25px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid var(--glass-border);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cell:hover:before {
+            opacity: 0.1;
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .cell span {
+            position: relative;
+            z-index: 1;
+            animation: cellPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes cellPop {
+            0% {
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .cell.x {
+            color: var(--danger-color);
+        }
+
+        .cell.o {
+            color: var(--success-color);
         }
 
         .winning-line {
-            background: linear-gradient(45deg, rgba(65, 88, 208, 0.5), rgba(200, 80, 192, 0.5 ));
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.6), rgba(240, 147, 251, 0.6));
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(102, 126, 234, 0.8);
+            animation: winningPulse 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes winningPulse {
+            from {
+                box-shadow: 0 0 25px rgba(102, 126, 234, 0.8);
+            }
+            to {
+                box-shadow: 0 0 35px rgba(240, 147, 251, 0.8);
+            }
+        }
+
+        .side-panel {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .scoreboard {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-light);
+        }
+
+        .scoreboard h2 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .player-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .player-score.current-player {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.3));
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .chat-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-light);
+            flex: 1;
+        }
+
+        .chat-box h2 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 15px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: messageSlide 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .message:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes messageSlide {
+            from {
+                transform: translateX(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .message .username {
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-right: 10px;
+        }
+
+        .message .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            float: right;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .chat-input input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .chat-input button {
+            padding: 15px 20px;
+            min-width: auto;
+            border-radius: 12px;
+        }
+
+        #rematchButtons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .game-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .side-panel {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            
+            .chat-box {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            .game-area {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .username-input {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .board {
+                max-width: 350px;
+                padding: 20px;
+                gap: 10px;
+            }
+            
+            .cell {
+                font-size: 2.5rem;
+            }
+            
+            .side-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-box {
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .board {
+                max-width: 300px;
+                padding: 15px;
+                gap: 8px;
+            }
+            
+            .cell {
+                font-size: 2rem;
+            }
+            
+            .status {
+                font-size: 1.1rem;
+                padding: 15px;
+            }
+            
+            .chat-box {
+                height: 300px;
+                padding: 20px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Fade animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease-out;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
     </style>
 </head>
@@ -253,7 +621,7 @@
                 <div class="cell" data-index="7"></div>
                 <div class="cell" data-index="8"></div>
             </div>
-            <div id="rematchButtons" style="display: none; text-align: center;">
+            <div id="rematchButtons" style="display: none;">
                 <button id="acceptRematch">Accept Rematch</button>
                 <button id="declineRematch">Decline Rematch</button>
             </div>
@@ -267,7 +635,7 @@
                 <h2>Chat</h2>
                 <div class="chat-messages" id="chatMessages"></div>
                 <div class="chat-input">
-                    <input type="text" id="messageInput" ID="GGGG" placeholder="Type a message...">
+                    <input type="text" id="messageInput" placeholder="Type a message...">
                     <button id="sendMessage">Send</button>
                 </div>
             </div>
@@ -276,219 +644,291 @@
 
     <script>
         const socket = io();
-let currentRoom = null;
-let isMyTurn = false;
-let mySymbol = null;
-let username = '';
-let players = [];
+        let currentRoom = null;
+        let isMyTurn = false;
+        let mySymbol = null;
+        let username = '';
+        let players = [];
 
-// DOM Elements
-const board = document.getElementById('board');
-const status = document.getElementById('status');
-const createRoomBtn = document.getElementById('createRoom');
-const joinRoomBtn = document.getElementById('joinRoom');
-const usernameInput = document.getElementById('username');
-const messageInput = document.getElementById('messageInput');
-const sendMessageBtn = document.getElementById('sendMessage');
-const chatMessages = document.getElementById('chatMessages');
-const scores = document.getElementById('scores');
-const requestRematchBtn = document.getElementById('requestRematch');
-const rematchButtons = document.getElementById('rematchButtons');
-const acceptRematchBtn = document.getElementById('acceptRematch');
-const declineRematchBtn = document.getElementById('declineRematch');
+        // DOM Elements
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const createRoomBtn = document.getElementById('createRoom');
+        const joinRoomBtn = document.getElementById('joinRoom');
+        const usernameInput = document.getElementById('username');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessage');
+        const chatMessages = document.getElementById('chatMessages');
+        const scores = document.getElementById('scores');
+        const requestRematchBtn = document.getElementById('requestRematch');
+        const rematchButtons = document.getElementById('rematchButtons');
+        const acceptRematchBtn = document.getElementById('acceptRematch');
+        const declineRematchBtn = document.getElementById('declineRematch');
 
-// Event Listeners
-createRoomBtn.addEventListener('click', () => {
-    username = usernameInput.value.trim();
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-    socket.emit('createRoom', username);
-});
-
-joinRoomBtn.addEventListener('click', () => {
-    username = usernameInput.value.trim();
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-    const roomId = prompt('Enter room ID:');
-    if (roomId) {
-        socket.emit('joinRoom', { roomId, username });
-        currentRoom = roomId;
-    }
-});
-
-requestRematchBtn.addEventListener('click', () => {
-    socket.emit('requestRematch', { roomId: currentRoom });
-    status.textContent = 'Rematch requested. Waiting for opponent...';
-    requestRematchBtn.disabled = true;
-});
-
-acceptRematchBtn.addEventListener('click', () => {
-    socket.emit('acceptRematch', { roomId: currentRoom });
-    hideRematchButtons();
-});
-
-declineRematchBtn.addEventListener('click', () => {
-    socket.emit('declineRematch', { roomId: currentRoom });
-    hideRematchButtons();
-});
-
-board.addEventListener('click', (e) => {
-    if (!isMyTurn) return;
-    
-    const cell = e.target;
-    if (cell.classList.contains('cell') && !cell.textContent) {
-        const index = cell.dataset.index;
-        socket.emit('makeMove', { roomId: currentRoom, index });
-    }
-});
-
-sendMessageBtn.addEventListener('click', sendMessage);
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
-
-// Helper Functions
-function sendMessage() {
-    const message = messageInput.value.trim();
-    if (message && currentRoom) {
-        socket.emit('sendMessage', { roomId: currentRoom, message, username });
-        messageInput.value = '';
-    }
-}
-
-function updateScoreboard() {
-    scores.innerHTML = players.map(player => `
-        <div class="player-score ${player.id === socket.id ? 'current-player' : ''}">
-            <span>${player.username}</span>
-            <span>${player.score}</span>
-        </div>
-    `).join('');
-}
-
-function resetBoard() {
-    Array.from(document.getElementsByClassName('cell')).forEach(cell => {
-        cell.textContent = '';
-        cell.className = 'cell';
-    });
-}
-
-function hideRematchButtons() {
-    rematchButtons.style.display = 'none';
-}
-
-function showRematchButton() {
-    requestRematchBtn.style.display = 'inline-block';
-    requestRematchBtn.disabled = false;
-}
-
-function highlightWinningCells(winningLine) {
-    if (winningLine) {
-        winningLine.forEach(index => {
-            document.querySelector(`[data-index="${index}"]`).classList.add('winning-line');
+        // Event Listeners
+        createRoomBtn.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            if (!username) {
+                showNotification('Please enter a username', 'warning');
+                return;
+            }
+            showLoading(createRoomBtn);
+            socket.emit('createRoom', username);
         });
-    }
-}
 
-// Socket Events
-socket.on('roomCreated', (roomId) => {
-    currentRoom = roomId;
-    status.textContent = `Room created! Share this ID with your friend: ${roomId}`;
-    status.classList.add('fade-in');
-});
+        joinRoomBtn.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            if (!username) {
+                showNotification('Please enter a username', 'warning');
+                return;
+            }
+            const roomId = prompt('Enter room ID:');
+            if (roomId) {
+                showLoading(joinRoomBtn);
+                socket.emit('joinRoom', { roomId, username });
+                currentRoom = roomId;
+            }
+        });
 
-socket.on('gameStart', ({ players: gamePlayers, currentPlayer, messages }) => {
-    players = gamePlayers;
-    mySymbol = socket.id === players[0].id ? 'X' : 'O';
-    isMyTurn = socket.id === currentPlayer;
-    status.textContent = isMyTurn ? 'Your turn!' : "Opponent's turn";
-    updateScoreboard();
-    resetBoard();
-    hideRematchButtons();
-    requestRematchBtn.style.display = 'none';
+        requestRematchBtn.addEventListener('click', () => {
+            socket.emit('requestRematch', { roomId: currentRoom });
+            updateStatus('Rematch requested. Waiting for opponent...');
+            requestRematchBtn.disabled = true;
+        });
 
-    // Load existing messages
-    chatMessages.innerHTML = messages.map(msg => `
-        <div class="message">
-            <span class="username">${msg.username}</span>
-            <span class="timestamp">${msg.timestamp}</span>
-            <div>${msg.message}</div>
-        </div>
-    `).join('');
-});
+        acceptRematchBtn.addEventListener('click', () => {
+            socket.emit('acceptRematch', { roomId: currentRoom });
+            hideRematchButtons();
+        });
 
-socket.on('moveMade', ({ index, symbol, board: gameBoard, winningLine }) => {
-    const cell = document.querySelector(`[data-index="${index}"]`);
-    cell.textContent = symbol;
-    cell.classList.add(symbol.toLowerCase());
-    
-    if (winningLine) {
-        highlightWinningCells(winningLine);
-    }
-    
-    isMyTurn = symbol !== mySymbol;
-    status.textContent = isMyTurn ? 'Your turn!' : "Opponent's turn";
-});
+        declineRematchBtn.addEventListener('click', () => {
+            socket.emit('declineRematch', { roomId: currentRoom });
+            hideRematchButtons();
+        });
 
-socket.on('gameOver', ({ winner, players: updatedPlayers, winningLine }) => {
-    players = updatedPlayers;
-    updateScoreboard();
-    
-    if (winningLine) {
-        highlightWinningCells(winningLine);
-    }
-    
-    if (winner === 'draw') {
-        status.textContent = "It's a draw!";
-    } else {
-        status.textContent = winner === mySymbol ? 'You won!' : 'You lost!';
-    }
-    isMyTurn = false;
-    showRematchButton();
-});
+        board.addEventListener('click', (e) => {
+            if (!isMyTurn) return;
+            
+            const cell = e.target;
+            if (cell.classList.contains('cell') && !cell.textContent) {
+                const index = cell.dataset.index;
+                socket.emit('makeMove', { roomId: currentRoom, index });
+                
+                // Add immediate visual feedback
+                cell.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    cell.style.transform = '';
+                }, 150);
+            }
+        });
 
-socket.on('rematchRequested', () => {
-    rematchButtons.style.display = 'block';
-    status.textContent = 'Opponent requested a rematch';
-});
+        sendMessageBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
 
-socket.on('rematchAccepted', () => {
-    status.textContent = 'Rematch accepted! Game starting...';
-    resetBoard();
-    hideRematchButtons();
-    requestRematchBtn.style.display = 'none';
-});
+        // Helper Functions
+        function showLoading(button) {
+            const originalText = button.textContent;
+            button.innerHTML = '<span class="loading"></span>';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 2000);
+        }
 
-socket.on('rematchDeclined', () => {
-    status.textContent = 'Rematch declined';
-    showRematchButton();
-});
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--${type === 'warning' ? 'warning' : 'primary'}-color);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
-socket.on('newMessage', (message) => {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message fade-in';
-    messageElement.innerHTML = `
-        <span class="username">${message.username}</span>
-        <span class="timestamp">${message.timestamp}</span>
-        <div>${message.message}</div>
-    `;
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-});
+        function updateStatus(message) {
+            status.textContent = message;
+            status.classList.add('fade-in');
+            setTimeout(() => {
+                status.classList.remove('fade-in');
+            }, 500);
+        }
 
-socket.on('playerLeft', () => {
-    status.textContent = 'Opponent left the game';
-    isMyTurn = false;
-    resetBoard();
-    showRematchButton();
-});
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message && currentRoom) {
+                socket.emit('sendMessage', { roomId: currentRoom, message, username });
+                messageInput.value = '';
+            }
+        }
 
-socket.on('roomError', (message) => {
-    alert(message);
-});
-</script>
+        function updateScoreboard() {
+            scores.innerHTML = players.map(player => `
+                <div class="player-score ${player.id === socket.id ? 'current-player' : ''}">
+                    <span>${player.username}</span>
+                    <span>${player.score}</span>
+                </div>
+            `).join('');
+        }
+
+        function resetBoard() {
+            Array.from(document.getElementsByClassName('cell')).forEach(cell => {
+                cell.innerHTML = '';
+                cell.className = 'cell';
+            });
+        }
+
+        function hideRematchButtons() {
+            rematchButtons.style.display = 'none';
+        }
+
+        function showRematchButton() {
+            requestRematchBtn.style.display = 'inline-block';
+            requestRematchBtn.disabled = false;
+        }
+
+        function highlightWinningCells(winningLine) {
+            if (winningLine) {
+                winningLine.forEach(index => {
+                    document.querySelector(`[data-index="${index}"]`).classList.add('winning-line');
+                });
+            }
+        }
+
+        function animateMove(cell, symbol) {
+            cell.innerHTML = `<span>${symbol}</span>`;
+            cell.classList.add(symbol.toLowerCase());
+        }
+
+        // Socket Events
+        socket.on('roomCreated', (roomId) => {
+            currentRoom = roomId;
+            updateStatus(`Room created! Share this ID with your friend: ${roomId}`);
+            showNotification('Room created successfully!', 'success');
+        });
+
+        socket.on('gameStart', ({ players: gamePlayers, currentPlayer, messages }) => {
+            players = gamePlayers;
+            mySymbol = socket.id === players[0].id ? 'X' : 'O';
+            isMyTurn = socket.id === currentPlayer;
+            updateStatus(isMyTurn ? 'Your turn!' : "Opponent's turn");
+            updateScoreboard();
+            resetBoard();
+            hideRematchButtons();
+            requestRematchBtn.style.display = 'none';
+
+            // Load existing messages
+            chatMessages.innerHTML = messages.map(msg => `
+                <div class="message">
+                    <span class="username">${msg.username}</span>
+                    <span class="timestamp">${msg.timestamp}</span>
+                    <div>${msg.message}</div>
+                </div>
+            `).join('');
+            
+            showNotification('Game started!', 'success');
+        });
+
+        socket.on('moveMade', ({ index, symbol, board: gameBoard, winningLine }) => {
+            const cell = document.querySelector(`[data-index="${index}"]`);
+            animateMove(cell, symbol);
+            
+            if (winningLine) {
+                setTimeout(() => {
+                    highlightWinningCells(winningLine);
+                }, 300);
+            }
+            
+            isMyTurn = symbol !== mySymbol;
+            updateStatus(isMyTurn ? 'Your turn!' : "Opponent's turn");
+        });
+
+        socket.on('gameOver', ({ winner, players: updatedPlayers, winningLine }) => {
+            players = updatedPlayers;
+            updateScoreboard();
+            
+            if (winningLine) {
+                setTimeout(() => {
+                    highlightWinningCells(winningLine);
+                }, 300);
+            }
+            
+            if (winner === 'draw') {
+                updateStatus("It's a draw!");
+                showNotification("It's a draw!", 'info');
+            } else {
+                const won = winner === mySymbol;
+                updateStatus(won ? 'You won!' : 'You lost!');
+                showNotification(won ? 'You won!' : 'You lost!', won ? 'success' : 'danger');
+            }
+            isMyTurn = false;
+            showRematchButton();
+        });
+
+        socket.on('rematchRequested', () => {
+            rematchButtons.style.display = 'flex';
+            updateStatus('Opponent requested a rematch');
+            showNotification('Opponent requested a rematch', 'info');
+        });
+
+        socket.on('rematchAccepted', () => {
+            updateStatus('Rematch accepted! Game starting...');
+            resetBoard();
+            hideRematchButtons();
+            requestRematchBtn.style.display = 'none';
+            showNotification('Rematch accepted!', 'success');
+        });
+
+        socket.on('rematchDeclined', () => {
+            updateStatus('Rematch declined');
+            showRematchButton();
+            showNotification('Rematch declined', 'info');
+        });
+
+        socket.on('newMessage', (message) => {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.innerHTML = `
+                <span class="username">${message.username}</span>
+                <span class="timestamp">${message.timestamp}</span>
+                <div>${message.message}</div>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        socket.on('playerLeft', () => {
+            updateStatus('Opponent left the game');
+            isMyTurn = false;
+            resetBoard();
+            showRematchButton();
+            showNotification('Opponent left the game', 'warning');
+        });
+
+        socket.on('roomError', (message) => {
+            showNotification(message, 'danger');
+        });
+
+        // Auto-resize textarea for better UX
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    </script>
 </body>
 </html>
